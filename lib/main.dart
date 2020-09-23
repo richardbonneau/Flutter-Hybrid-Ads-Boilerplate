@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hybridadsboilerplate/Providers/Ads.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future main() async {
+  await DotEnv().load(".env");
   runApp(MyApp());
 }
 
@@ -39,6 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final ads = Provider.of<Ads>(context);
+    print(DotEnv().env["test"]);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -53,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             RaisedButton(
               onPressed: ads.undoBuyAds,
-              child: Text("DEBUG - Put back ads"),
+              child: Text("Put back ads"),
             )
           ],
         ),
