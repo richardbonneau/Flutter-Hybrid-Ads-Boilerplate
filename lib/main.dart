@@ -27,13 +27,13 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: Home(title: 'Hybrid Ads Boiler Plate'),
+          home: IapSetup(),
         ));
   }
 }
 
 class IapSetup extends StatefulWidget {
-  IapSetup(Key key) : super(key: key);
+  IapSetup() : super();
   _IapSetupState createState() => _IapSetupState();
 }
 
@@ -72,7 +72,7 @@ class _IapSetupState extends State<IapSetup> {
       setState(() {
         purchaseUpdated = true;
       });
-//      print("purchase updated: $productItem");
+      print("purchase updated: $productItem");
     });
 
     _purchaseErrorSubscription =
@@ -98,12 +98,26 @@ class _IapSetupState extends State<IapSetup> {
   }
 
   Widget build(BuildContext context) {
+    final ads = Provider.of<Ads>(context);
+    bool checkedAdsStatus = false;
+    if (!checkedAdsStatus && _result != "") {
+      ads.fetchProductsList();
+      setState(() {
+        checkedAdsStatus = true;
+      });
+    }
+    if (purchaseUpdated) {
+      ads.adsPurchased();
+      setState(() {
+        purchaseUpdated = false;
+      });
+    }
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
           title: Text("Hybrid Ads Boilerplate"),
         ),
         bottomNavigationBar: BottomBannerAd(),
-        body: Home());
+        body: Home(title: 'Hybrid Ads Boiler Plate'));
   }
 }
