@@ -4,7 +4,7 @@ import 'dart:io';
 //import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
 
 class Ads with ChangeNotifier {
-  bool areAdsPurchased = false;
+  bool areAdsRemoved = false;
 //  List<IAPItem> _items = [];
 //  List<PurchasedItem> _purchases = [];
 //
@@ -64,12 +64,12 @@ class Ads with ChangeNotifier {
   undoBuyAds() async {
 //    SharedPreferences prefs = await SharedPreferences.getInstance();
 //    await prefs.setBool('areAdsPurchased', false);
-    areAdsPurchased = false;
+    areAdsRemoved = false;
     notifyListeners();
   }
 
   buyAds() {
-    areAdsPurchased = true;
+    areAdsRemoved = true;
 
 //    print("in buy ads");
 //    try {

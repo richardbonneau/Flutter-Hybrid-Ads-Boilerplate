@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import 'package:hybridadsboilerplate/Providers/Ads.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hybridadsboilerplate/Components/BottomBannerAd.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:hybridadsboilerplate/Screens/Home.dart';
+import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
 
 void main() async {
-//  WidgetsFlutterBinding.ensureInitialized();
-
   await DotEnv().load('.env');
   runApp(MyApp());
 }
@@ -27,45 +27,83 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: MyHomePage(title: 'Hybrid Ads Boiler Plate'),
+          home: Home(title: 'Hybrid Ads Boiler Plate'),
         ));
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
+class IapSetup extends StatefulWidget {
+  IapSetup(Key key) : super(key: key);
+  _IapSetupState createState() => _IapSetupState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    final ads = Provider.of<Ads>(context);
+class _IapSetupState extends State<IapSetup> {
+  StreamSubscription _purchaseUpdatedSubscription;
+  StreamSubscription _purchaseErrorSubscription;
+  StreamSubscription _connectionSubscription;
+  var _result = "";
+  bool purchaseUpdated = false;
+  void initState() {
+    super.initState();
+    _initializePlatformState();
+  }
 
+  Future<void> _initializePlatformState() async {
+    var result = await FlutterInappPurchase.instance.initConnection;
+    setState(() {
+      _result = result;
+    });
+    if (!mounted) return;
+
+    // refresh items for android
+    try {
+      String msg = await FlutterInappPurchase.instance.consumeAllItems;
+      print("consumeAllItems: $msg");
+    } catch (err) {
+      print("consukeAllItems error: $err");
+    }
+    _connectionSubscription =
+        FlutterInappPurchase.connectionUpdated.listen((connected) {
+      print("connected: $connected");
+    });
+
+    _purchaseUpdatedSubscription =
+        FlutterInappPurchase.purchaseUpdated.listen((productItem) {
+      setState(() {
+        purchaseUpdated = true;
+      });
+//      print("purchase updated: $productItem");
+    });
+
+    _purchaseErrorSubscription =
+        FlutterInappPurchase.purchaseError.listen((purchaseError) {
+      print("purchase error: $purchaseError");
+    });
+  }
+
+  void dispose() async {
+    super.dispose();
+    if (_connectionSubscription != null) {
+      _connectionSubscription.cancel();
+      _connectionSubscription = null;
+    }
+    if (_purchaseErrorSubscription != null) {
+      _purchaseErrorSubscription.cancel();
+      _purchaseErrorSubscription = null;
+    }
+    if (_purchaseUpdatedSubscription != null) {
+      _purchaseUpdatedSubscription.cancel();
+      _purchaseUpdatedSubscription = null;
+    }
+  }
+
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      bottomNavigationBar: BottomBannerAd(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            RaisedButton(
-              onPressed: ads.buyAds,
-              child: Text("Pay to remove ads"),
-            ),
-            RaisedButton(
-              onPressed: ads.undoBuyAds,
-              child: Text("Put back ads"),
-            ),
-          ],
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: Text("Hybrid Ads Boilerplate"),
         ),
-      ),
-    );
+        bottomNavigationBar: BottomBannerAd(),
+        body: Home());
   }
 }
