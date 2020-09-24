@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hybridadsboilerplate/Providers/Ads.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hybridadsboilerplate/Components/BottomBannerAd.dart';
+import 'package:flutter_config/flutter_config.dart';
 
 void main() async {
-  await FlutterConfig.loadEnvVariables();
+//  WidgetsFlutterBinding.ensureInitialized();
+
+  await DotEnv().load('.env');
   runApp(MyApp());
 }
 
@@ -42,11 +45,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final ads = Provider.of<Ads>(context);
-    print(FlutterConfig.get("BANNER_ID"));
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
+      bottomNavigationBar: BottomBannerAd(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -59,7 +63,6 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: ads.undoBuyAds,
               child: Text("Put back ads"),
             ),
-            BottomBannerAd()
           ],
         ),
       ),
